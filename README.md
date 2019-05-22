@@ -1,1 +1,1 @@
-# site-isolation-benchmark
+The script in this project can be used to run basic benchmark with Chromium based browsers. The goal of the script is to collect metrics in a consistent and repeatable way, but it is definitely not a realistic and representative of real browsing of actual users. Therefore, this should be used mainly as an example on how to navigate the browser through automation and not to evaluate performance characteristics of real user browsing.
