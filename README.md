@@ -1,8 +1,8 @@
 The benchmark.py script can be used to run a simple benchmark in Chromium-based browsers. The goal of the script is to collect metrics in a consistent and repeatable way. It is not meant to be representative of real browsing workloads from actual users. This should mainly be used as an example for how to automate the browser for measuring performance for a set of test URLs.
 
 The benchmark script runs two phases:
-* Populating cache - this visits each URL in succession in the same tab to ensure the HTTP disk cache is properly primed. It waits for a period of time after each load. This can be used to capture the traffic and replay later if the benchmark is not used against live sites.
-* Benchmarking - loads each page in a new instance of Chrome and captures data (chrome://histograms)
+* Populating cache - this visits each URL in succession in the same tab to ensure the HTTP disk cache is properly primed. It waits for a period of time after each load. This can be used to capture the traffic and replay later if the benchmark is not going to be used against live sites.
+* Benchmarking - loads each page in a new instance of Chrome and captures data from chrome://histograms.
 
 
 ### Prerequisites
