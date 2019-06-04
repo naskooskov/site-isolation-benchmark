@@ -12,8 +12,11 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.chrome.options import Options
 
+# Note: The data is saved in filename derived from the host portion of the URL.
+# Therefore each URL should come from a different site to avoid clobbering the
+# output or the filename generation should be changed.
 urls_list = [
-  # Baseline
+  # Baseline with no out-of-process iframes.
   'https://web.evilbit.io/empty.html',
   # Baseline with single out-of-process iframe which is empty.
   'http://csreis.github.io/tests/cross-site-iframe-minimal.html',
@@ -37,7 +40,7 @@ urls_list = [
   'https://www.yelp.com/',
   # Home, #50
   'https://seatguru.com/',
-  # Using just one process
+  # Top URL, no out-of-process iframes.
   'https://google.com'
 ]
 
@@ -52,8 +55,8 @@ else:
 # The user profile directory to be reused across all starts of Chrome
 chrome_user_data_path = './user-profile/'
 
-# number of iterations to load each URL in the benchmark
-bm_iterations = 5
+# Number of iterations to load each URL in the benchmark
+benchmark_iterations = 5
 
 # A helper sleep function which prints countdown in seconds to the console.
 def sleep(msg, seconds):
@@ -78,15 +81,12 @@ def get_chrome_options():
   # loaded at all.
   options.add_experimental_option('useAutomationExtension', False)
 
-  # In order to be able to get memory metrics from chrome://histograms in
-  # shorter interval than the usual 30 minute one, these command line switches
-  # need to be set.
+  # Set these command line switches to get memory metrics from chrome://histograms.
   options.add_argument('--force-enable-metrics-reporting')
   options.add_experimental_option('excludeSwitches', ['metrics-recording-only'])
 
-  # Setting a big enough window size, so pages utilizing lazy loading of
-  # offscreen DOM elements can be coerced in loading at least a screenful of
-  # elements.
+  # Use a large window to ensure sufficient DOM elements are loaded, even if pages
+  # use lazy loading for offscreen elements.
   options.add_argument("window-size=1300,1200")
 
   # If WebPageReplay Go is used, the following command line parameters are
@@ -117,7 +117,8 @@ def collect_data(driver, file_name):
     text_file.write(content)
 
 # This method creates a new instance of Chrome, loads the URL specified and
-# captures the UMA histograms.
+# captures the UMA histograms. It is used to run multiple iterations in
+# the specified isolation mode.
 def benchmark_url(url, disable_isolation):
   driver = None
   options = get_chrome_options()
@@ -126,9 +127,9 @@ def benchmark_url(url, disable_isolation):
   else:
     options.add_argument("--site-per-process")
 
-  for i in range(0, bm_iterations):
+  for i in range(0, benchmark_iterations):
     print "Starting Chrome"
-    driver = driver = webdriver.Chrome(chrome_options=options, executable_path=chrome_driver_path)
+    driver = webdriver.Chrome(chrome_options=options, executable_path=chrome_driver_path)
     print "Starting Chrome - complete"
 
     # Waiting here is useful to allow for all initialization tasks to have a
@@ -142,7 +143,7 @@ def benchmark_url(url, disable_isolation):
     print "Load[%s]: %s - complete!" % (i, url)
 
     # The initial generation of histograms, which includes metrics from the
-    # periodic metrics updater such as memory metrics runs at about 60 seconds
+    # periodic metrics updater such as memory metrics, runs at about 60 seconds
     # after the browser has started. Wait for at least that long and maybe a
     # bit extra to ensure the metrics we care about are generated prior to
     # capturing it.
@@ -173,7 +174,7 @@ def cache_urls():
 if __name__== "__main__":
   global args
   parser = argparse.ArgumentParser()
-  parser.add_argument('--no-prime-cache', default=True, action='store_false')
+  parser.add_argument('--no-prime-cache', default=False, action='store_true')
   parser.add_argument('--caching-wait-time', default=10)
   parser.add_argument('--live-sites', default=False, action='store_true')
   args = parser.parse_args()
