@@ -179,7 +179,7 @@ if __name__== "__main__":
   parser.add_argument('--live-sites', default=False, action='store_true')
   args = parser.parse_args()
 
-  if args.no_prime_cache:
+  if not args.no_prime_cache:
     print "Priming HTTP cache"
     cache_urls()
     print "Priming HTTP cache - complete"
